@@ -34,7 +34,7 @@ void mask_file(string inputFile,string outputFile){
     ofstream oFile(outputFile, ios::binary);
     uint8_t byte;
     uint8_t psp = static_cast<uint8_t>(generate_psp(8,0));
-    while (iFile.read(reinterpret_cast<char*>(&byte), sizeof(byte)) || iFile.gcount()) {
+    while (iFile.read(reinterpret_cast<char*>(&byte), sizeof(byte))) {
         uint8_t res = byte^psp;
         oFile.write(reinterpret_cast<char*>(&res), sizeof(res));
     }
