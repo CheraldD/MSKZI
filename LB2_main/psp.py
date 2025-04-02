@@ -1,54 +1,97 @@
 import matplotlib.pyplot as plt
+import re
 
-# Данные
-frequencies = {
-    'p1': [499798, 500202],
-    'p2': [250064, 249735, 249735, 250466],
-    'p3': [124915, 125150, 124743, 124992, 125149, 124585, 124992, 125474],
-    'p4': [62359, 62557, 62413, 62737, 62301, 62442, 62420, 62572, 62556, 62593, 62330, 62255, 62848, 62143, 62572, 62902]
-}
+# Функция для парсинга частот последовательностей
+def parse_sequence_frequencies(data, sequence_length):
+    pattern = re.compile(r'f(\d+):\s*(\d+)')
+    frequencies = {}
 
-relative_frequencies = {
-    'p1': [0.499798, 0.500202],
-    'p2': [0.250064, 0.249735, 0.249735, 0.250466],
-    'p3': [0.124915, 0.12515, 0.124743, 0.124992, 0.125149, 0.124585, 0.124992, 0.125474],
-    'p4': [0.0623592, 0.0625572, 0.0624132, 0.0627372, 0.0623012, 0.0624422, 0.0624202, 0.0625722,
-           0.0625562, 0.0625932, 0.0623302, 0.0622552, 0.0628482, 0.0621432, 0.0625722, 0.0629022]
-}
+    for match in re.finditer(pattern, data):
+        seq = match.group(1)
+        freq = int(match.group(2))
 
-acf = [1, 0.001056, -0.000568, -0.001232, 0.000996, -5.4e-05, 0.000652, -0.000794, 2.8e-05, -4.4e-05,
-       -0.000924, -0.00052, -0.000754, 0.00175, -0.000816, 0.001726, 0, 0.00129, -0.000254, -0.00151,
-       0.000434, 0.001542, 0.001062, -0.000578, -0.000316, -0.001286, 0.001274, 0.0011, 0.001056, -0.001026,
-       0.000254, -0.001226]
+        # Составляем ключ с длиной последовательности
+        if len(seq) == sequence_length:
+            frequencies[seq] = freq
+    return frequencies
 
-# Бинарные метки для оси x
-binary_labels = {
-    'p1': ['0', '1'],
-    'p2': ['00', '01', '10', '11'],
-    'p3': ['000', '001', '010', '011', '100', '101', '110', '111'],
-    'p4': ['0000', '0001', '0010', '0011', '0100', '0101', '0110', '0111', '1000', '1001', '1010', '1011', '1100', '1101', '1110', '1111']
-}
+# Функция для парсинга относительных частот
+def parse_relative_frequencies(data, sequence_length):
+    pattern = re.compile(r'(\d+):\s*([\d.]+)')
+    frequencies = {}
 
-# Построение графиков
-plt.figure(figsize=(12, 8))
+    for match in re.finditer(pattern, data):
+        seq = match.group(1)
+        freq = float(match.group(2))
 
-plt.subplot(3, 1, 1)
-for p, values in frequencies.items():
-    plt.plot(values, marker='o', label=p)
-    plt.xticks(range(len(values)), binary_labels[p])
-plt.title("Частоты появления последовательностей")
-plt.legend()
+        # Составляем ключ с длиной последовательности
+        if len(seq) == sequence_length:
+            frequencies[seq] = freq
+    return frequencies
 
-plt.subplot(3, 1, 2)
-for p, values in relative_frequencies.items():
-    plt.plot(values, marker='x', label=p)
-    plt.xticks(range(len(values)), binary_labels[p])
-plt.title("Относительные частоты последовательностей")
-plt.legend()
+# Функция для парсинга АКФ
+def parse_acf(data):
+    pattern = re.compile(r'(\d+):\s*([\d.-]+)')
+    acf = []
 
-plt.subplot(3, 1, 3)
-plt.stem(range(len(acf)), acf, basefmt="C0-")
-plt.title("Автокорреляционная функция")
+    for match in re.finditer(pattern, data):
+        acf.append(float(match.group(2)))
 
-plt.tight_layout()
-plt.show()
+    return acf
+
+# Функция для построения графиков
+def plot_data(frequencies, label, title, xlabel, ylabel):
+    sequences = list(frequencies.keys())
+    values = list(frequencies.values())
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(sequences, values)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(f"{title}: {label}")
+    plt.xticks(rotation=90)
+    plt.show()
+
+# Основной процесс
+def main(file_path):
+    with open(file_path, 'r') as file:
+        data = file.read()
+
+    # Парсинг данных для различных последовательностей
+    p1_frequencies = parse_sequence_frequencies(data, 1)
+    p2_frequencies = parse_sequence_frequencies(data, 2)
+    p3_frequencies = parse_sequence_frequencies(data, 3)
+    p4_frequencies = parse_sequence_frequencies(data, 4)
+
+    # Парсинг относительных частот
+    p1_rel_freq = parse_relative_frequencies(data, 1)
+    p2_rel_freq = parse_relative_frequencies(data, 2)
+    p3_rel_freq = parse_relative_frequencies(data, 3)
+    p4_rel_freq = parse_relative_frequencies(data, 4)
+
+    # Парсинг АКФ
+    acf_values = parse_acf(data)
+
+    # Построение графиков
+    plot_data(p1_frequencies, 'p1', 'Частоты появления последовательностей', 'Последовательность', 'Частота')
+    plot_data(p2_frequencies, 'p2', 'Частоты появления последовательностей', 'Последовательность', 'Частота')
+    plot_data(p3_frequencies, 'p3', 'Частоты появления последовательностей', 'Последовательность', 'Частота')
+    plot_data(p4_frequencies, 'p4', 'Частоты появления последовательностей', 'Последовательность', 'Частота')
+
+    plot_data(p1_rel_freq, 'p1', 'Относительные частоты последовательностей', 'Последовательность', 'Относительная частота')
+    plot_data(p2_rel_freq, 'p2', 'Относительные частоты последовательностей', 'Последовательность', 'Относительная частота')
+    plot_data(p3_rel_freq, 'p3', 'Относительные частоты последовательностей', 'Последовательность', 'Относительная частота')
+    plot_data(p4_rel_freq, 'p4', 'Относительные частоты последовательностей', 'Последовательность', 'Относительная частота')
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(len(acf_values)), acf_values, marker='o')
+    plt.xlabel('Лаг')
+    plt.ylabel('АКФ')
+    plt.title('Автокорреляционная функция')
+    plt.grid(True)
+    plt.show()
+
+# Запуск программы
+if __name__ == '__main__':
+    file_path = 'file_chars.txt'  # Замените на путь к вашему файлу
+    main(file_path)
