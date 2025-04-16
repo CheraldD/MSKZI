@@ -7,11 +7,11 @@
 #include <numeric>
 #include <random>
 using namespace std;
+uint rlz1 = 0b1000011111010001011;
+bitset<118> initial_rlz2(string("1111111001110010011000011001010100010010000101111111110101001010000000110001101111111011111011110010010000101111001101"));
 uint generate_psp(const uint length, bool flag) {
     ofstream oFile("PSP.txt",ios::out);
-    uint rlz1 = 0b1000011111010001011;
     const uint shift_rlz1 = 0x01 << (19 - 12 - 1);
-    bitset<118> initial_rlz2(string("1111111001110010011000011001010100010010000101111111110101001010000000110001101111111011111011110010010000101111001101"));
     const uint shift_rlz2 = 85 - 1;
     uint last_bit_idx = 118 - 1;
     uint tap_bit_idx = shift_rlz2;
@@ -33,26 +33,13 @@ void mask_file(string inputFile,string outputFile){
     ifstream iFile(inputFile,ios::binary);
     ofstream oFile(outputFile, ios::binary);
     uint8_t byte;
-    uint8_t psp = static_cast<uint8_t>(generate_psp(8,0));
     while (iFile.read(reinterpret_cast<char*>(&byte), sizeof(byte))) {
-        uint8_t res = byte^psp;
+        uint8_t res = byte^static_cast<uint8_t>(generate_psp(8,0));
         oFile.write(reinterpret_cast<char*>(&res), sizeof(res));
     }
     iFile.close();
     oFile.close();
 }
-/*void demask_file(string inputFile,string outputFile){
-    ifstream iFile(inputFile,ios::binary);
-    ofstream oFile(outputFile);
-    uint8_t byte;
-    uint8_t psp = static_cast<uint8_t>(generate_psp(8));
-    while (iFile.read(reinterpret_cast<char*>(&byte), sizeof(byte)) || iFile.gcount()) {
-        uint8_t res = byte^psp;
-        oFile.write(reinterpret_cast<char*>(&res), sizeof(res));
-    }
-    iFile.close();
-    oFile.close();
-}*/
 int main() {
     uint length;
     uint type;

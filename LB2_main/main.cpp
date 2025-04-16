@@ -150,10 +150,9 @@ void mask_file(string inputFile, string outputFile)
     ifstream iFile(inputFile, ios::binary);
     ofstream oFile(outputFile, ios::binary);
     uint8_t byte;
-    uint8_t psp = static_cast<uint8_t>(generate_psp(8, false));
     while (iFile.read(reinterpret_cast<char *>(&byte), sizeof(byte)))
     {
-        uint8_t res = byte ^ psp;
+        uint8_t res = byte ^ static_cast<uint8_t>(generate_psp(8, false));
         oFile.write(reinterpret_cast<char *>(&res), sizeof(res));
     }
     iFile.close();
@@ -196,36 +195,38 @@ uint get_file_size(const string& filename)
     file.close();
     return temp;  
 }
-void file_characteristic(string inputFile)
-{
-    length=get_file_size(inputFile)*8;
-    ifstream iFile(inputFile, ios::binary);
-    if (!iFile)
-    {
-        cerr << "Не удалось открыть файл!" << endl;
+void file_characteristic(const std::string& inputFile) {
+    length = get_file_size(inputFile) * 8;
+    std::ifstream iFile(inputFile, std::ios::binary);
+    if (!iFile) {
+        std::cerr << "Не удалось открыть файл!" << std::endl;
         return;
     }
+    std::vector<uint32_t> byte_freq(256, 0);
+    uint64_t total_bytes = 0;
     uint8_t word;
-    while (iFile.read(reinterpret_cast<char*>(&word), sizeof(word)))
-    {
-        for (int i = 7; i >= 0; --i) 
-        {
-            uint8_t temp = (word >> i) & 1;
-            sequence.push_back(temp);
-            
-        }
+    while (iFile.read(reinterpret_cast<char*>(&word), sizeof(word))) {
+        ++byte_freq[word];
+        ++total_bytes;
     }
     iFile.close();
-}
-void printVector(const std::vector<bool>& vec) {
-    for (bool value : vec) {
-        std::cout << value << " ";
+    std::cout << "Распределение вероятностей появления байтов:" << std::endl;
+    for (int i = 0; i < 256; ++i) {
+        if (byte_freq[i] > 0) {
+            double probability = static_cast<double>(byte_freq[i]) / total_bytes;
+            std::cout << "Байт 0x" << std::hex << i 
+                      << " (" << std::dec << i << "): " 
+                      << probability << std::endl;
+        }
     }
-    std::cout << std::endl;
+    std::cout << "________________________________________________________________________" << std::endl;
 }
+
 void calculcate_static_char(vector<bool> &seq,bool flag,string input){
     if(flag){
         file_characteristic(input);
+        clear_vectors();
+        return ;
     }
     count_freq(seq);
     print_freq();
