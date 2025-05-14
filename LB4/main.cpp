@@ -16,5 +16,6 @@ int main()
     magma cipher;
     cipher.file_open("data.txt",false);
     cipher.file_open("output.enc",true);
+    cipher.test_ciphertext_resilience("output.enc","oversize.txt");
     return 0;
 }

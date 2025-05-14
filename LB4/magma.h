@@ -9,7 +9,7 @@
 #include <random>
 #include <iomanip>
 #include <cstring>
-
+#include <filesystem>
 #include "keygen.h"
 class magma{
     public:
@@ -28,13 +28,14 @@ class magma{
     uint64_t file_size;
     std::ifstream fin;
     std::vector<uint32_t> key;
-    uint64_t read_file(std::ifstream& in);
-    void encrypt();
-    void decrypt();
+    uint64_t read_file(std::ifstream &in, bool is_encrypting);
+    void encrypt(std::ifstream &in, std::string filename);
+    void decrypt(std::ifstream &in, std::string filename);
     uint32_t round(uint32_t right,int n);
     uint32_t substitution(uint32_t input);
     vector <uint32_t> read_key(std::string filename);
     uint64_t get_file_size(std::ifstream& in);
     void file_open(std::string file_path,bool flag);
     magma();
+    void test_ciphertext_resilience(std::string ciphertext_path, std::string oversized_path);
 };
