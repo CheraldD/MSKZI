@@ -124,8 +124,6 @@ vey_points EdvToVey(Digit u[], Digit v[]){
     Mult(s_times_v_plus_1,u_times_v_minus_1_obr,y);
     Assig(x,Res.x);
     Assig(y,Res.y);
-    //std::cout<<"X: "<<NumToStringDigit(x)<<std::endl;
-    //std::cout<<"Y: "<<NumToStringDigit(y)<<std::endl;
     delete[] x;
     delete[] y;
     delete[] v_plus_1;
